@@ -1,4 +1,4 @@
-FROM apache/airflow:2.5.1-python3.9
+FROM apache/airflow:2.5.1
 ENV BASE_DIR=/opt/airflow
 USER airflow
 COPY requirements.txt /
