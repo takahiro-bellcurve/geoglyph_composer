@@ -3,7 +3,7 @@ import os, sys, datetime
 import scrapy
 from scrapy.loader import ItemLoader
 
-sys.path.append(sys.path.join(os.getenv("BASE_DIR"), "plugins"))
+sys.path.append(os.path.join(os.getenv("BASE_DIR"), "plugins"))
 from lib.discord_webhook import DiscordWebhook
 from scrape.zozotown.items import BrandItem
 

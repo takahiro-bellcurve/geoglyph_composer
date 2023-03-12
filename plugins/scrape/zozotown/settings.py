@@ -95,4 +95,4 @@ FEED_EXPORT_ENCODING = "utf-8"
 
 # Set Feed exports
 
-FEED_URI = "gs://sodashi/geoglyph/%(name)s/%(time)s.jsonl"
+# FEED_URI = "gs://sodashi/geoglyph/%(name)s/%(time)s.jsonl"

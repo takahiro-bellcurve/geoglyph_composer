@@ -2,12 +2,13 @@ import os, sys, datetime, re
 
 import scrapy
 from scrapy.loader import ItemLoader
+from scrapy.selector import Selector
 from scrapy.linkextractors import LinkExtractor
 from scrapy.spiders import Rule
 
-sys.path.append(sys.path.join(os.getenv("BASE_DIR"), "plugins"))
+sys.path.append(os.path.join(os.getenv("BASE_DIR"), "plugins"))
 from lib.discord_webhook import DiscordWebhook
-from scrape.zozotown.items import GoodsItem, GoodsSizeItem, GoodsColorItem, GoodsImageItem
+from scrape.zozotown.items import GoodsLoader, GoodsSizeLoader, GoodsColorLoader, GoodsImageLoader
 
 
 t_delta = datetime.timedelta(hours=9)
@@ -17,10 +18,6 @@ class ZozotownBrandGoodsSpider(scrapy.spiders.CrawlSpider):
     name = "zozotown_brand_goods"
     allowed_domains = ["zozo.jp"]
     start_url = "https://zozo.jp/brand/a/"
-
-    # custom_settings = {
-    #     'FEED_URI': "gs://sodashi/geoglyph/",
-    # }
 
     # def __init__(self, brand_url):
     #     super().__init__()
@@ -34,8 +31,7 @@ class ZozotownBrandGoodsSpider(scrapy.spiders.CrawlSpider):
     )
 
     def parse_item(self, response):
-        # goods
-        goods_loader = ItemLoader(item=GoodsItem(), response=response)
+        goods_loader = GoodsLoader(selector=Selector(response))
 
         brand_id = response.url.split('/')[-4]
         goods_loader.add_value('brand_id', brand_id)
@@ -69,38 +65,35 @@ class ZozotownBrandGoodsSpider(scrapy.spiders.CrawlSpider):
         else:
             goods_loader.add_value('material', None)
 
+        goods_loader.add_value('size', self.parse_size(response))
+        goods_loader.add_value('color', self.parse_color(response))
+        goods_loader.add_value('image', self.parse_image(response))
         goods_loader.add_value('created_at', datetime.datetime.now(JST).strftime('%Y-%m-%d %H:%M:%S'))
 
         yield goods_loader.load_item()
 
-        # goods_color
-        goods_color_loader = ItemLoader(item=GoodsColorItem(), response=response)
-        
+    def parse_color(self, response):
         colors = response.xpath("//dl[@class='p-goods-information-action ']//span[contains(@class,'p-goods-add-cart__color')]/text()").getall()
         for color in colors:
-            goods_color_loader.add_value('goods_id', goods_id)
+            goods_color_loader = GoodsColorLoader(selector=Selector(response))
             goods_color_loader.add_value('color', color)
             goods_color_loader.add_value('created_at', datetime.datetime.now(JST))
 
             yield goods_color_loader.load_item()
 
-        # goods_image
-        goods_image_loader = ItemLoader(item=GoodsImageItem(), response=response)
-
+    def parse_image(self, response):
         images = response.xpath("//li[@class='p-goods-thumbnail-list__item']//img/@src").getall()
         for image in images:
-            goods_image_loader.add_value('goods_id', goods_id)
+            goods_image_loader = GoodsImageLoader(selector=Selector(response))
             goods_image_loader.add_value('image_url', re.sub("d_35", "d_500", image))
             goods_image_loader.add_value('created_at', datetime.datetime.now(JST).strftime('%Y-%m-%d %H:%M:%S'))
 
             yield goods_image_loader.load_item()
 
-        # goods_size
-        goods_size_loader = ItemLoader(item=GoodsSizeItem(), response=response)
-
+    def parse_size(self, response):
         sizes_blocks = response.xpath("//div[@class='p-goods-size-scroll-table-column-left']//tbody[@class='p-goods-size-table-body']/tr")
         for size_block in sizes_blocks:
-            goods_size_loader.add_value('goods_id', goods_id)
+            goods_size_loader = GoodsSizeLoader(selector=Selector(response))
 
             size = size_block.xpath("./th/@data-size").get()
             goods_size_loader.add_value('size', re.sub(r"\D", "", size))
