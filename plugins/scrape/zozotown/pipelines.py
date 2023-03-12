@@ -49,31 +49,93 @@ class ZozotownBrandsPipeline(MysqlPipeline):
 
 class ZozotownBrandGoodsPipeline(MysqlPipeline):
     def process_item(self, item, spider):
-        check_brand_id = item['brand_id']
-        find_query = f"SELECT * FROM brands WHERE brand_id = '{check_brand_id}'"
-        is_exist = self.cur.execute(find_query, check_brand_id)
+        check_goods_id = item['goods_id']
+        find_query = f"SELECT * FROM `zozotown_brand_goods` WHERE `goods_id` = %s"
+        is_exist = self.cur.execute(find_query, check_goods_id)
 
-        if is_exist:
-            insert_query = f"""
-            INSERT INTO brand_goods (brand_id, goods_id, goods_url, goods_name, goods_name_kana, created_at)
-            VALUES ({item['brand_id']}, {item['goods_id']}, {item['goods_url']}, {item['goods_name']}, {item['goods_name_kana']}, {item['created_at']})
-            """
-            self.cur.execute(insert_query, (
-                item['brand_id'],
-                item['goods_id'],
-                item['goods_url'],
-                item['goods_name'],
-                item['goods_name_kana'],
-                item['created_at']
-            ))
+        if is_exist == 0:
+            self._insert_goods(self, item)
+            self._insert_goods_sizes(self, item)
+            self._insert_goods_colors(self, item)
+            self._insert_goods_images(self, item)
             self.conn.commit()
         else:
             pass
         return item
     
-    def close_spider(self):
+    def _insert_goods(self, item):
+        insert_query = """
+        INSERT INTO `zozotown_brand_goods` (`brand_id`, `goods_id`, `goods_url`, `goods_name`, `gender`, `price`, `description`, `category_id`, `child_category_id`, `material`, `created_at`)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """
+        category_id = self._convert_to_category_id(item['category_path'])
+        child_category_id = self._convert_to_child_category_id(item['child_category_path'])
+        self.cur.execute(insert_query, (
+            item['brand_id'],
+            item['goods_id'],
+            item['goods_url'],
+            item['goods_name'],
+            item['gender'],
+            item['price'],
+            item['description'],
+            category_id,
+            child_category_id,
+            item['material'],
+            item['created_at']
+        ))
+        self.conn.commit()
+
+    def _insert_goods_sizes(self, item):
+        insert_query = """
+        INSERT INTO `zozotown_brand_goods_sizes` (`goods_id`, `size`, `info`)
+        VALUES (%s, %s, %s)
+        """
+        for size in item['sizes']:
+            self.cur.execute(insert_query, (
+                item['goods_id'],
+                size['size'],
+                size['info'],
+            ))
+            self.conn.commit()
+
+    def _insert_goods_colors(self, item):
+        insert_query = """
+        INSERT INTO `zozotown_brand_goods_colors` (`goods_id`, `color`)
+        VALUES (%s, %s)
+        """
+        for color in item['colors']:
+            self.cur.execute(insert_query, (
+                item['goods_id'],
+                color['color'],
+            ))
+            self.conn.commit()
+
+    def _insert_goods_images(self, item):
+        insert_query = """
+        INSERT INTO `zozotown_brand_goods_images` (`goods_id`, `image_url`)
+        VALUES (%s, %s)
+        """
+        for image in item['images']:
+            self.cur.execute(insert_query, (
+                item['goods_id'],
+                image['image_url'],
+            ))
+            self.conn.commit()
+    
+    def _convert_to_category_id(self, category_path):
+        find_query = f"SELECT id FROM `zozotown_categories` WHERE `category_path` = %s"
+        self.cur.execute(find_query, category_path)
+        category_id = self.cur.fetchone()
+        return category_id
+    
+    def _convert_to_child_category_id(self, child_category_path):
+        find_query = f"SELECT id FROM `zozotown_child_categories` WHERE `child_category_path` = %s"
+        self.cur.execute(find_query, child_category_path)
+        child_category_id = self.cur.fetchone()
+        return child_category_id
+        
+    def close_spider(self, spider):
         self.cur.close()
         self.conn.close()
-
-
+    
 

@@ -17,11 +17,6 @@ JST = datetime.timezone(t_delta, 'JST')
 class ZozotownBrandGoodsSpider(scrapy.spiders.CrawlSpider):
     name = "zozotown_brand_goods"
     allowed_domains = ["zozo.jp"]
-    start_url = "https://zozo.jp/brand/a/"
-
-    # def __init__(self, brand_url):
-    #     super().__init__()
-    #     self.start_url = brand_url
 
     def start_requests(self):
         yield scrapy.Request(url=self.start_url)
