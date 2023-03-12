@@ -5,12 +5,18 @@ from lib.oneshot.mysql.mysql_connector import MysqlConnector
 
 def main():
     query = '''
-    CREATE TABLE zozotown_brands (
+    CREATE TABLE zozotown_goods (
         id INT NOT NULL AUTO_INCREMENT,
         brand_id VARCHAR(255) NOT NULL,
-        brand_url VARCHAR(255) NOT NULL,
-        brand_name VARCHAR(255) NOT NULL,
-        brand_name_kana VARCHAR(255),
+        goods_id VARCHAR(255) NOT NULL,
+        goods_url VARCHAR(255) NOT NULL,
+        goods_name VARCHAR(255) NOT NULL,
+        gender VARCHAR(255) NOT NULL,
+        price INT NOT NULL,
+        category_id INT,
+        child_category_id INT,
+        description TEXT,
+        material VARCHAR(255),
         created_at DATETIME NOT NULL
     )'''
 

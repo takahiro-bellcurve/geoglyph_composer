@@ -6,15 +6,23 @@ from scrapy.loader import ItemLoader
 sys.path.append(os.path.join(os.getenv("BASE_DIR"), "plugins"))
 from lib.discord_webhook import DiscordWebhook
 from scrape.zozotown.items import BrandItem
+from scrape.zozotown.custom_spider import CustomSpider
 
 
 t_delta = datetime.timedelta(hours=9)
 JST = datetime.timezone(t_delta, 'JST')
 
-class ZozotownBrandsSpider(scrapy.Spider):
+class ZozotownBrandsSpider(CustomSpider):
     name = "zozotown_brands"
     allowed_domains = ["zozo.jp"]
     start_urls = ["https://zozo.jp/brand/"]
+
+    custom_settings = {
+         'ITEM_PIPELINES': {
+                'scrape.zozotown.pipelines.ZozotownBrandsPipeline': 300,
+            }
+    }
+
 
 
     def __init__(self, *args, **kwargs):
@@ -22,7 +30,8 @@ class ZozotownBrandsSpider(scrapy.Spider):
         self.start_time = datetime.datetime.now(JST).strftime('%Y/%m/%d %H:%M:%S')
         self.end_time = None
         self.items_scraped = 0
-        self.status = "success"
+        self.error_count = 0
+        self.error_values = []
         self.items = []
 
     @classmethod
@@ -35,7 +44,7 @@ class ZozotownBrandsSpider(scrapy.Spider):
     
     def spider_closed(self):
         self.end_time = datetime.datetime.now(JST).strftime('%Y/%m/%d %H:%M:%S')
-        if self.status == "success":
+        if self.error_count == 0:
             embeds = [
                 {
                     'title': 'ZOZOTOWNのブランド一覧のスクレイピングが完了しました',
@@ -65,6 +74,10 @@ class ZozotownBrandsSpider(scrapy.Spider):
                     終了時刻: {self.end_time}
 
                     ブランド情報を{self.items_scraped}件取得しました
+
+                    エラー件数: {self.error_count}
+
+                    エラー内容: {self.error_values[0:2]}
                     ''',
                     'color': 16711680
                 }
@@ -79,7 +92,8 @@ class ZozotownBrandsSpider(scrapy.Spider):
         self.items.append(item)
 
     def item_error(self, failure):
-        self.status = "failure"
+        self.error_count += 1
+        self.error_values.append(failure.value)
         self.logger.error(failure.value)
 
     
@@ -99,7 +113,7 @@ class ZozotownBrandsSpider(scrapy.Spider):
             loader.add_value("brand_name", brand_name)
 
             brand_name_kana = brand.xpath("./a/span/@data-kana").get()
-            if brand_name_kana is None:
+            if not brand_name_kana:
                 brand_name_kana = "null"
             loader.add_value("brand_name_kana", brand_name_kana)
 
