@@ -2,8 +2,8 @@ import os, sys
 from dotenv import load_dotenv
 import requests, json
 
-load_dotenv(".env")
 sys.path.append(os.getenv("BASE_DIR"))
+load_dotenv(f"{os.getenv('BASE_DIR')}/.env")
 
 
 class DiscordWebhook:

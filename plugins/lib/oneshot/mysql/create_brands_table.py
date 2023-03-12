@@ -1,4 +1,7 @@
-from mysql_connector import MysqlConnector
+import os, sys
+
+sys.path.append(os.path.join(os.getenv("BASE_DIR"), "plugins"))
+from lib.oneshot.mysql.mysql_connector import MysqlConnector
 
 def main():
     query = '''
