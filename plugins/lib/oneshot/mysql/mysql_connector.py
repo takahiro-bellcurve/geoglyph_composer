@@ -55,3 +55,18 @@ class MysqlConnector:
           cursor.close()
           logger.info("Cursor closed.")
 
+    def execute_many(self, query, params=None):
+        logger.info(f"Executing query: {query}")
+        cursor = self.connection.cursor()
+        try:
+          cursor.executemany(query, params)
+          self.connection.commit()
+          logger.info(f"Query executed successfully.")
+        except Exception as e:
+          logger.error(f"Error Occurred: {e}")
+          self.connection.rollback()
+          sys.exit()
+        finally:
+          cursor.close()
+          logger.info("Cursor closed.")
+
