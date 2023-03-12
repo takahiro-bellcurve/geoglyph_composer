@@ -3,6 +3,13 @@ ENV BASE_DIR=/opt/airflow
 
 USER root
 
+RUN mkdir -p /opt/airflow/logs && \
+    mkdir -p /opt/airflow/dags && \
+    mkdir -p /opt/airflow/plugins 
+
+RUN chmod -R 777 /opt/airflow
+RUN chmod -R 777 /opt/airflow/logs
+
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     build-essential \
