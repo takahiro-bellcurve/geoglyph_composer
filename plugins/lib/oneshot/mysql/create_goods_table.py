@@ -6,13 +6,13 @@ from lib.oneshot.mysql.mysql_connector import MysqlConnector
 def main():
     query = '''
     CREATE TABLE zozotown_goods (
-        id INT NOT NULL AUTO_INCREMENT,
+        id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
         brand_id VARCHAR(255) NOT NULL,
         goods_id VARCHAR(255) NOT NULL,
         goods_url VARCHAR(255) NOT NULL,
         goods_name VARCHAR(255) NOT NULL,
-        gender VARCHAR(255) NOT NULL,
-        price INT NOT NULL,
+        gender VARCHAR(255),
+        price INT,
         category_id INT,
         child_category_id INT,
         description TEXT,

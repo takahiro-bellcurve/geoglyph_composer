@@ -6,7 +6,7 @@ from lib.oneshot.mysql.mysql_connector import MysqlConnector
 def main():
     query = '''
     CREATE TABLE zozotown_brands (
-        id INT NOT NULL AUTO_INCREMENT,
+        id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
         brand_id VARCHAR(255) NOT NULL,
         brand_url VARCHAR(255) NOT NULL,
         brand_name VARCHAR(255) NOT NULL,

@@ -5,11 +5,11 @@ from lib.oneshot.mysql.mysql_connector import MysqlConnector
 
 def main():
     query = '''
-    CREATE TABLE child_categories (
-        id INT NOT NULL,
-        category_id INT NOT NULL
+    CREATE TABLE zozotown_child_categories (
+        id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        category_id INT NOT NULL,
         name VARCHAR(255) NOT NULL,
-        path VARCHAR(255) NOT NULL,
+        path VARCHAR(255) NOT NULL
     )'''
 
     db = MysqlConnector()
@@ -33,7 +33,7 @@ def main():
 
 def insert_data(values):
     query = '''
-    INSERT INTO categories (id, category_id , name, path) VALUES (%s, %s, %s, %s)
+    INSERT INTO zozotown_child_categories (id, category_id , name, path) VALUES (%s, %s, %s, %s)
     '''
 
     db = MysqlConnector()
