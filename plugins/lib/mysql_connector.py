@@ -16,16 +16,16 @@ class MysqlConnector:
         self.charset = "utf8mb4"
         self.cusrorType = pymysql.cursors.DictCursor
 
-        logger.warning(f"""
+        logger.info(f"""
           ----- Connection information -----
           host: {self.host}
           user: {self.user}
           password: ******{self.password[-4:]}
           db: {self.db}
           charset: {self.charset}
-          ---------------------------------
-          Connection to MySQL is successful.          
+          ---------------------------------        
           """)
+        
         try:
           self.connection = pymysql.connect(
               host=self.host,
@@ -35,12 +35,13 @@ class MysqlConnector:
               charset=self.charset,
               cursorclass=self.cusrorType
           )
+          logger.info("Connection established.")
         except Exception as e:
           logger.error(f"Error Occurred: {e}")
           sys.exit()
 
     
-    def execute(self, query, params=None):
+    def write(self, query, params=None):
         logger.info(f"Executing query: {query}")
         cursor = self.connection.cursor()
         try:
@@ -55,7 +56,7 @@ class MysqlConnector:
           cursor.close()
           logger.info("Cursor closed.")
 
-    def execute_many(self, query, params=None):
+    def write_many(self, query, params=None):
         logger.info(f"Executing query: {query}")
         cursor = self.connection.cursor()
         try:
@@ -69,4 +70,19 @@ class MysqlConnector:
         finally:
           cursor.close()
           logger.info("Cursor closed.")
-
+    
+    def read(self, query, params=None):
+        logger.info(f"Executing query: {query}")
+        cursor = self.connection.cursor()
+        try:
+          cursor.execute(query, params)
+          res = cursor.fetchall()
+          logger.info(f"Query executed successfully.")
+        except Exception as e:
+          logger.error(f"Error Occurred: {e}")
+          self.connection.rollback()
+          sys.exit()
+        finally:
+          cursor.close()
+          logger.info("Cursor closed.")
+        return res

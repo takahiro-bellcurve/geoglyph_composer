@@ -1,7 +1,7 @@
 import os, sys, json
 
 sys.path.append(os.path.join(os.getenv("BASE_DIR"), "plugins"))
-from lib.oneshot.mysql.mysql_connector import MysqlConnector
+from lib.mysql_connector import MysqlConnector
 
 def main():
     query = '''
@@ -13,7 +13,7 @@ def main():
     )'''
 
     db = MysqlConnector()
-    db.execute(query)
+    db.write(query)
 
 
     with open('../data/zozotown_category.json') as f:
@@ -37,7 +37,7 @@ def insert_data(values):
     '''
 
     db = MysqlConnector()
-    db.execute_many(query, values)
+    db.write_many(query, values)
 
 if __name__ == "__main__":
     main()

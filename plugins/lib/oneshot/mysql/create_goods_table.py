@@ -1,7 +1,7 @@
 import os, sys
 
 sys.path.append(os.path.join(os.getenv("BASE_DIR"), "plugins"))
-from lib.oneshot.mysql.mysql_connector import MysqlConnector
+from lib.mysql_connector import MysqlConnector
 
 def main():
     query = '''
@@ -21,7 +21,7 @@ def main():
     )'''
 
     db = MysqlConnector()
-    db.execute(query)
+    db.write(query)
 
 if __name__ == "__main__":
     main()

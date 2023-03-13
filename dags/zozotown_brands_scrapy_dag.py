@@ -5,7 +5,6 @@ from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.operators.bash_operator import BashOperator
 
-from scrape.scrapy_tasks import scraping_zozotown_brands
 from lib.discord_webhook import DiscordWebhook
 
 with DAG(

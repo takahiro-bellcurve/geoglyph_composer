@@ -38,15 +38,16 @@ class GoodsItem(scrapy.Item):
     goods_id = scrapy.Field(output_processor=TakeFirst())
     goods_url = scrapy.Field(output_processor=TakeFirst())
     goods_name = scrapy.Field(output_processor=TakeFirst())
+    gender = scrapy.Field(output_processor=TakeFirst())
     price = scrapy.Field(output_processor=TakeFirst())
     description = scrapy.Field(output_processor=TakeFirst())
     category_path = scrapy.Field(output_processor=TakeFirst())
     child_category_path = scrapy.Field(output_processor=TakeFirst())
     material = scrapy.Field(output_processor=TakeFirst())
     created_at = scrapy.Field(output_processor=TakeFirst())
-    size = scrapy.Field(serializer=GoodsSizeItem)
-    color = scrapy.Field(serializer=GoodsColorItem)
-    image = scrapy.Field(serializer=GoodsImageItem)
+    sizes = scrapy.Field(serializer=GoodsSizeItem)
+    colors = scrapy.Field(serializer=GoodsColorItem)
+    images = scrapy.Field(serializer=GoodsImageItem)
 
 
 class GoodsLoader(ItemLoader):

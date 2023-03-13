@@ -50,14 +50,14 @@ class ZozotownBrandsPipeline(MysqlPipeline):
 class ZozotownBrandGoodsPipeline(MysqlPipeline):
     def process_item(self, item, spider):
         check_goods_id = item['goods_id']
-        find_query = f"SELECT * FROM `zozotown_brand_goods` WHERE `goods_id` = %s"
+        find_query = f"SELECT * FROM `zozotown_goods` WHERE `goods_id` = %s"
         is_exist = self.cur.execute(find_query, check_goods_id)
 
         if is_exist == 0:
-            self._insert_goods(self, item)
-            self._insert_goods_sizes(self, item)
-            self._insert_goods_colors(self, item)
-            self._insert_goods_images(self, item)
+            self._insert_goods(item)
+            self._insert_goods_sizes(item)
+            self._insert_goods_colors(item)
+            self._insert_goods_images(item)
             self.conn.commit()
         else:
             pass
@@ -65,7 +65,7 @@ class ZozotownBrandGoodsPipeline(MysqlPipeline):
     
     def _insert_goods(self, item):
         insert_query = """
-        INSERT INTO `zozotown_brand_goods` (`brand_id`, `goods_id`, `goods_url`, `goods_name`, `gender`, `price`, `description`, `category_id`, `child_category_id`, `material`, `created_at`)
+        INSERT INTO `zozotown_goods` (`brand_id`, `goods_id`, `goods_url`, `goods_name`, `gender`, `price`, `description`, `category_id`, `child_category_id`, `material`, `created_at`)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
         category_id = self._convert_to_category_id(item['category_path'])
@@ -83,11 +83,10 @@ class ZozotownBrandGoodsPipeline(MysqlPipeline):
             item['material'],
             item['created_at']
         ))
-        self.conn.commit()
 
     def _insert_goods_sizes(self, item):
         insert_query = """
-        INSERT INTO `zozotown_brand_goods_sizes` (`goods_id`, `size`, `info`)
+        INSERT INTO `zozotown_goods_sizes` (`goods_id`, `size`, `info`)
         VALUES (%s, %s, %s)
         """
         for size in item['sizes']:
@@ -96,11 +95,10 @@ class ZozotownBrandGoodsPipeline(MysqlPipeline):
                 size['size'],
                 size['info'],
             ))
-            self.conn.commit()
 
     def _insert_goods_colors(self, item):
         insert_query = """
-        INSERT INTO `zozotown_brand_goods_colors` (`goods_id`, `color`)
+        INSERT INTO `zozotown_goods_colors` (`goods_id`, `color`)
         VALUES (%s, %s)
         """
         for color in item['colors']:
@@ -108,11 +106,10 @@ class ZozotownBrandGoodsPipeline(MysqlPipeline):
                 item['goods_id'],
                 color['color'],
             ))
-            self.conn.commit()
 
     def _insert_goods_images(self, item):
         insert_query = """
-        INSERT INTO `zozotown_brand_goods_images` (`goods_id`, `image_url`)
+        INSERT INTO `zozotown_goods_images` (`goods_id`, `image_url`)
         VALUES (%s, %s)
         """
         for image in item['images']:
@@ -120,16 +117,15 @@ class ZozotownBrandGoodsPipeline(MysqlPipeline):
                 item['goods_id'],
                 image['image_url'],
             ))
-            self.conn.commit()
     
     def _convert_to_category_id(self, category_path):
-        find_query = f"SELECT id FROM `zozotown_categories` WHERE `category_path` = %s"
+        find_query = f"SELECT id FROM `zozotown_categories` WHERE `path` = %s"
         self.cur.execute(find_query, category_path)
         category_id = self.cur.fetchone()
         return category_id
     
     def _convert_to_child_category_id(self, child_category_path):
-        find_query = f"SELECT id FROM `zozotown_child_categories` WHERE `child_category_path` = %s"
+        find_query = f"SELECT id FROM `zozotown_child_categories` WHERE `path` = %s"
         self.cur.execute(find_query, child_category_path)
         child_category_id = self.cur.fetchone()
         return child_category_id

@@ -5,10 +5,10 @@ from airflow import DAG
 from airflow.operators.bash_operator import BashOperator
 from airflow.utils import dates
 
-from lib.oneshot.mysql.mysql_connector import MysqlConnector
+from lib.mysql_connector import MysqlConnector
 
 with DAG(
-    dag_id="zozotown_brands_scrapy_dag",
+    dag_id="zozotown_brands_goods_scrapy_dag",
     schedule_interval='30 0 * * 6',
     default_args={
         "depends_on_past": False,
@@ -18,10 +18,10 @@ with DAG(
 ) as dag:
     
     query = '''
-    SELECT brand_id, brand_url FROM zozotown_brands ORDER BY brand_id ASC LIMIT 10
+    SELECT brand_id, brand_url FROM zozotown_brands LIMIT 10, 100
     '''
     db = MysqlConnector()
-    brands = db.execute(query)
+    brands = db.read(query)
 
     scrapy_tasks = []
     for brand in brands:
