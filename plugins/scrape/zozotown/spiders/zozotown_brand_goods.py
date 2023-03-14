@@ -58,10 +58,11 @@ class ZozotownBrandGoodsSpider(scrapy.spiders.CrawlSpider):
             price = "null"
         goods_loader.add_value('price', re.sub(r"\D", "", price))
 
-        description = response.xpath("//div[@class='contbox']/text()").getall()
+        description = response.xpath("//div[@class='contbox']//text()").getall()
         if description:
             goods_loader.add_value('description', re.sub(r"\s", "", " ".join(description)))
-
+        else:
+            goods_loader.add_value('description', "null")
         category_path = response.xpath("//li[@class='p-goods-information-spec-category-list-item'][1]/a/@href").get()
         goods_loader.add_value('category_path', category_path.split('/')[-2])
 
@@ -69,19 +70,19 @@ class ZozotownBrandGoodsSpider(scrapy.spiders.CrawlSpider):
         if child_category_path:
             goods_loader.add_value('child_category_path', child_category_path.split('/')[-2])
         else:
-            goods_loader.add_value('child_category_path', None)
+            goods_loader.add_value('child_category_path', "null")
 
         material = response.xpath("//dt[contains(text(),'素材')]/following-sibling::dd/text()").get()
         if material:
             goods_loader.add_value('material', material)
         else:
-            goods_loader.add_value('material', None)
+            goods_loader.add_value('material', "null")
 
         gender = response.xpath("//dt[contains(text(),'性別タイプ')]/following-sibling::dd/a/text()").getall()
         if gender:
             goods_loader.add_value('gender', "-".join(gender))
         else:
-            goods_loader.add_value('gender', None)
+            goods_loader.add_value('gender', "null")
 
         goods_loader.add_value('sizes', self.parse_size(response))
         goods_loader.add_value('colors', self.parse_color(response))

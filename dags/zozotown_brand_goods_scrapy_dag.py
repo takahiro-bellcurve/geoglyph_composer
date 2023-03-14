@@ -18,7 +18,7 @@ with DAG(
 ) as dag:
     
     query = '''
-    SELECT brand_id, brand_url FROM zozotown_brands LIMIT 10, 100
+    SELECT brand_id, brand_url FROM zozotown_brands LIMIT 10, 3
     '''
     db = MysqlConnector()
     brands = db.read(query)
