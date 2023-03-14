@@ -27,6 +27,7 @@ class ZozotownBrandsSpider(CustomSpider):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.title = "ZOZOTOWNのブランド一覧のスクレイピング"
         self.start_time = datetime.datetime.now(JST).strftime('%Y/%m/%d %H:%M:%S')
         self.end_time = None
         self.items_scraped = 0
@@ -44,59 +45,25 @@ class ZozotownBrandsSpider(CustomSpider):
     
     def spider_closed(self):
         self.end_time = datetime.datetime.now(JST).strftime('%Y/%m/%d %H:%M:%S')
-        if self.error_count == 0:
-            embeds = [
-                {
-                    'title': 'ZOZOTOWNのブランド一覧のスクレイピングが完了しました',
-                    'description': 
-                    f'''
-                    spider名: {self.name}
-
-                    開始時刻: {self.start_time}
-
-                    終了時刻: {self.end_time}
-
-                    ブランド情報を{self.items_scraped}件取得しました
-                    ''',
-                    'color': 15258703
-                }
-            ]
-        else:
-            embeds = [
-                {
-                    'title': 'ZOZOTOWNのブランド一覧のスクレイピングに失敗したItemがありました',
-                    'description': 
-                    f'''
-                    spider名: {self.name}
-
-                    開始時刻: {self.start_time}
-
-                    終了時刻: {self.end_time}
-
-                    ブランド情報を{self.items_scraped}件取得しました
-
-                    エラー件数: {self.error_count}
-
-                    エラー内容: {self.error_values[0:2]}
-                    ''',
-                    'color': 16711680
-                }
-            ]
-        DiscordWebhook().send(embeds=embeds)
+        DiscordWebhook().scrapy_notification(
+            title=self.title,
+            spider_name=self.name,
+            start_time=self.start_time,
+            end_time=self.end_time,
+            items_scraped=self.items_scraped,
+            error_count=self.error_count,
+            error_values=self.error_values,
+        )
 
 
     def item_scraped(self, item):
         self.items_scraped += 1
         item = dict(item)
-        item.setdefault("brand_name_kana", "null")
         self.items.append(item)
 
     def item_error(self, failure):
         self.error_count += 1
         self.error_values.append(failure.value)
-        self.logger.error(failure.value)
-
-    
 
     def parse(self, response):
         brands = response.xpath("//dd[@class='p-brand-list-content']")

@@ -18,7 +18,7 @@ with DAG(
 ) as dag:
     
     query = '''
-    SELECT brand_id, brand_url FROM zozotown_brands LIMIT 10, 3
+    SELECT brand_id, brand_url, brand_name FROM zozotown_brands LIMIT 100, 30
     '''
     db = MysqlConnector()
     brands = db.read(query)
@@ -27,7 +27,7 @@ with DAG(
     for brand in brands:
         scraping_zozotown_brand_goods_task = BashOperator(
             task_id=f"scraping_zozotown_{brand['brand_id']}_goods",
-            bash_command=f"cd {os.getenv('BASE_DIR')}/plugins/scrape ;  scrapy crawl zozotown_brand_goods -a start_url={brand['brand_url']}",
+            bash_command=f"cd {os.getenv('BASE_DIR')}/plugins/scrape ;  scrapy crawl zozotown_brand_goods -a start_url={brand['brand_url']} -a title={brand['brand_name']}",
             dag=dag
         )
         scrapy_tasks.append(scraping_zozotown_brand_goods_task)

@@ -1,7 +1,6 @@
 import os, sys, datetime, re, logging, json
 
 import scrapy
-from scrapy.loader import ItemLoader
 from scrapy.selector import Selector
 from scrapy.linkextractors import LinkExtractor
 from scrapy.spiders import Rule
@@ -9,6 +8,7 @@ from scrapy.spiders import Rule
 sys.path.append(os.path.join(os.getenv("BASE_DIR"), "plugins"))
 from lib.discord_webhook import DiscordWebhook
 from scrape.zozotown.items import GoodsLoader, GoodsSizeLoader, GoodsColorLoader, GoodsImageLoader
+from scrape.zozotown.custom_spider import CustomCrawlSpider
 
 
 t_delta = datetime.timedelta(hours=9)
@@ -16,7 +16,7 @@ JST = datetime.timezone(t_delta, 'JST')
 
 logger = logging.getLogger(__name__)
 
-class ZozotownBrandGoodsSpider(scrapy.spiders.CrawlSpider):
+class ZozotownBrandGoodsSpider(CustomCrawlSpider):
     name = "zozotown_brand_goods"
     allowed_domains = ["zozo.jp"]
 
@@ -26,12 +26,53 @@ class ZozotownBrandGoodsSpider(scrapy.spiders.CrawlSpider):
         }
     }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.start_time = datetime.datetime.now(JST).strftime('%Y/%m/%d %H:%M:%S')
+        self.end_time = None
+        self.items_scraped = 0
+        self.error_count = 0
+        self.error_values = []
+        self.items = []
+        self.error_list = []
+
     def start_requests(self):
         yield scrapy.Request(url=self.start_url)
 
     rules = (
         Rule(LinkExtractor(restrict_xpaths=("//li[@class='o-grid-catalog__item']//a[@class='c-catalog-header__link']")), callback='parse_item', follow=True),
     )
+    @classmethod
+    def from_crawler(cls, crawler, *args, **kwargs):
+        spider = super(ZozotownBrandGoodsSpider, cls).from_crawler(crawler, *args, **kwargs)
+        crawler.signals.connect(spider.spider_closed, signal=scrapy.signals.spider_closed)
+        crawler.signals.connect(spider.item_scraped, signal=scrapy.signals.item_scraped)
+        crawler.signals.connect(spider.item_error, signal=scrapy.signals.item_error)
+        return spider
+    
+    def spider_closed(self):
+        self.end_time = datetime.datetime.now(JST).strftime('%Y/%m/%d %H:%M:%S')
+        DiscordWebhook().scrapy_notification(
+            title=self.title,
+            spider_name=self.name,
+            start_time=self.start_time,
+            end_time=self.end_time,
+            items_scraped=self.items_scraped,
+            error_count=self.error_count,
+            error_values=self.error_values,
+        )
+
+    def item_scraped(self, item):
+        self.items_scraped += 1
+        item = dict(item)
+        self.items.append(item)
+
+    def item_error(self, failure):
+        self.error_count += 1
+        self.error_values.append(failure.value)
+        self.error_list.append(failure.value)
+        if failure.value not in self.error_list:
+            DiscordWebhook.error_notification(self.title, failure.value)
 
     def parse_item(self, response):
         logger.warning("parse_item: %s", response.url)
