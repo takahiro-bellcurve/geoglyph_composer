@@ -53,7 +53,7 @@ class ZozotownBrandGoodsSpider(CustomCrawlSpider):
     def spider_closed(self):
         self.end_time = datetime.datetime.now(JST).strftime('%Y/%m/%d %H:%M:%S')
         DiscordWebhook().scrapy_notification(
-            title=self.title,
+            title=f"{self.title}の商品のスクレイピング",
             spider_name=self.name,
             start_time=self.start_time,
             end_time=self.end_time,

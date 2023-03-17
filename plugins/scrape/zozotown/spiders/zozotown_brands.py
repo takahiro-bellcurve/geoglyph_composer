@@ -15,14 +15,12 @@ JST = datetime.timezone(t_delta, 'JST')
 class ZozotownBrandsSpider(CustomSpider):
     name = "zozotown_brands"
     allowed_domains = ["zozo.jp"]
-    start_urls = ["https://zozo.jp/brand/"]
 
     custom_settings = {
          'ITEM_PIPELINES': {
                 'scrape.zozotown.pipelines.ZozotownBrandsPipeline': 300,
             }
     }
-
 
 
     def __init__(self, *args, **kwargs):
@@ -34,6 +32,9 @@ class ZozotownBrandsSpider(CustomSpider):
         self.error_count = 0
         self.error_values = []
         self.items = []
+
+    def start_requests(self):
+        yield scrapy.Request(url=self.start_url, callback=self.parse)
 
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
