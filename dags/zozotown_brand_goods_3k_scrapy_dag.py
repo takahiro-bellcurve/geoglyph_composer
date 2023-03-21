@@ -10,19 +10,19 @@ from lib.mysql_connector import MysqlConnector
 from lib import scrapy_executer
 
 with DAG(
-    dag_id="zozotown_brands_goods_scrapy_dag",
-    schedule_interval='30 0 * * 6',
+    dag_id="zozotown_brands_goods_3k_scrapy_dag",
+    schedule_interval='0 16 * * 3',
     
     default_args={
         "depends_on_past": False,
         "catchup": False,
-        'start_date': dates.days_ago(8),
+        'start_date': "2023-03-17",
         "retries": 0,
     },
 ) as dag:
     
     query = '''
-    SELECT brand_id, brand_url, brand_name FROM zozotown_brands LIMIT 200, 100
+    SELECT brand_id, brand_url, brand_name FROM zozotown_brands LIMIT 2000, 3000
     '''
     db = MysqlConnector()
     brands = db.read(query)
