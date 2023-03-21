@@ -48,6 +48,7 @@ class ZozotownBrandsSpider(CustomSpider):
         self.end_time = datetime.datetime.now(JST).strftime('%Y/%m/%d %H:%M:%S')
         DiscordWebhook().scrapy_notification(
             title=self.title,
+            start_url=self.start_url,
             spider_name=self.name,
             start_time=self.start_time,
             end_time=self.end_time,

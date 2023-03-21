@@ -41,6 +41,7 @@ class ZozotownBrandGoodsSpider(CustomCrawlSpider):
 
     rules = (
         Rule(LinkExtractor(restrict_xpaths=("//li[@class='o-grid-catalog__item']//a[@class='c-catalog-header__link']")), callback='parse_item', follow=True),
+        Rule(LinkExtractor(restrict_xpaths=("//a[@class='c-pager__next']")), follow=True),
     )
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
@@ -54,6 +55,7 @@ class ZozotownBrandGoodsSpider(CustomCrawlSpider):
         self.end_time = datetime.datetime.now(JST).strftime('%Y/%m/%d %H:%M:%S')
         DiscordWebhook().scrapy_notification(
             title=f"{self.title}の商品のスクレイピング",
+            start_url=self.start_url,
             spider_name=self.name,
             start_time=self.start_time,
             end_time=self.end_time,

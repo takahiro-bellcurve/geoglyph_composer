@@ -33,13 +33,15 @@ class DiscordWebhook:
         ]
         self.send(embeds=embeds)
 
-    def scrapy_notification(self, title, spider_name=None, start_time=None, end_time=None, items_scraped=None, error_count=None, error_values=None):
+    def scrapy_notification(self, title, start_url=None,  spider_name=None, start_time=None, end_time=None, items_scraped=None, error_count=None, error_values=None):
         if error_count == 0:
             embeds = [
                 {
                     "title": title,
                     "description": f"""
                     spider名: {spider_name}
+
+                    start_url: {start_url}
 
                     開始時刻: {start_time}
 
@@ -57,6 +59,8 @@ class DiscordWebhook:
                     "description": f"""
                     spider名: {spider_name}
 
+                    start_url: {start_url}
+
                     開始時刻: {start_time}
 
                     終了時刻: {end_time}
@@ -65,7 +69,7 @@ class DiscordWebhook:
 
                     エラー件数: {error_count}
 
-                    エラー内容: {error_values[0:2]}
+                    エラー内容: {error_values[0]}
                     """,
                     "color": 16711680,
                 }
